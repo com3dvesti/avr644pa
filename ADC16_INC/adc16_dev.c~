@@ -26,7 +26,7 @@ Data Stack size         : 1024
 //#include <stlib.h>
 #include <delay.h>
 #include <spi.h>
-unsigned char KOEFF_VEL=255-252;
+unsigned char KOEFF_VEL=255-250;
 
 void read_adc();
 
@@ -83,7 +83,10 @@ interrupt [USART_RXC] void usart_rx_isr(void)
 {
 char status,data;
 status=UCSR0A;
-data=UDR0;  gotov=1;
+data=UDR0;  
+if(data==0x71) {KOEFF_VEL=KOEFF_VEL+2; if(KOEFF_VEL>200) KOEFF_VEL=150; }
+if(data==0x77) {KOEFF_VEL=KOEFF_VEL-2; if(KOEFF_VEL<20) KOEFF_VEL=50; }
+gotov=1;
 if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0)
    {
    rx_buffer0[rx_wr_index0++]=data;
@@ -128,9 +131,17 @@ return data;
 // Timer 0 overflow interrupt service routine
 interrupt [TIM0_OVF] void timer0_ovf_isr(void)
 {
+static int timer_ctr;
 TCCR0B=0x00;
 TCNT0=255-250;
-TCCR0B=0x03;
+TCCR0B=0x04;
+if (++timer_ctr >= 100)
+{   
+    gotov = 1; 
+    timer_ctr = 0;
+}
+
+//gotov=1;
 // putchar(0x55); putchar(0x33);putchar(0x39);
 }
 // Timer2 overflow interrupt service routine
@@ -139,8 +150,8 @@ interrupt [TIM2_OVF] void timer2_ovf_isr(void)
 PORTD.7=0;
 TCCR2B=0x00;
 TCNT2=KOEFF_VEL;
-TCCR2B=0x03;
-delay_us(10);
+TCCR2B=0x05;
+delay_us(500);
 PORTD.7=1;
 
 }
@@ -301,12 +312,11 @@ while (1)
       {   
       //putchar(0x55);
       //gotov=1;
-      if(gotov) { read_adc();
-      PORTD.6=1;delay_us(20);  
-      //if(gotov) {printf("hello atmega644 vasia\r\n");gotov=0;}
+      if(gotov) { read_adc(); PORTD.6=1; delay_us(40);  
+      //printf("hello atmega644 vasia\r\n");
      // printf("%9.3f %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f \r\n ", timer,wx,wy,wz,ax,ay,az,DAT_ADC[3]*1.0); 
-       printf("hello atmega644 vasia \r\n");
-      delay_us(100);  
+       printf("%6.0f \r\n",KOEFF_VEL*1.0);
+      delay_us(150);  
       PORTD.6=0;  gotov=0;
        }
       }
