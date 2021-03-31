@@ -1,9 +1,12 @@
 RAM Allocation [bytes]
 Variable                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-rx_buffer0                                                                        0x0500       8
-timer_ctr                                                                         0x0508       2
-_seed                                                                             0x050A       4
+DAT_ADC                                                                           0x0500      20
+timer                                                                             0x0514       4
+DAT_7685                                                                          0x0518      10
+rx_buffer0                                                                        0x0522       8
+timer_ctr                                                                         0x052A       2
+_seed                                                                             0x052C       4
 
 EEPROM Allocation [bytes]
 Variable                                                                          Address   Size
@@ -13,28 +16,30 @@ Register Allocation
 Variable                                                                          Register  Size
 ------------------------------------------------------------------------------------------------
 KOEFF_VEL                                                                         R4           1
-rx_wr_index0                                                                      R3           1
-rx_rd_index0                                                                      R6           1
-rx_counter0                                                                       R5           1
-rx_buffer_overflow0                                                               GPIOR0.0  1bit
+data_adc                                                                          R5,R6        2
+ad_7685                                                                           GPIOR0.0  1bit
 gotov                                                                             GPIOR0.1  1bit
+rx_wr_index0                                                                      R3           1
+rx_rd_index0                                                                      R8           1
+rx_counter0                                                                       R7           1
+rx_buffer_overflow0                                                               GPIOR0.2  1bit
 
 FLASH Allocation [words]
 Function                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-usart_rx_isr                                                                      0x00086     54
-timer0_ovf_isr                                                                    0x000BC     33
-timer2_ovf_isr                                                                    0x000DD     25
-read_adc                                                                          0x000F6      1
-main                                                                              0x000F7    142
-putchar                                                                           0x00185     10
-put_usart_G100                                                                    0x0018F     10
-_ftoe_G100                                                                        0x00199    210
-_print_G100                                                                       0x0026B    538
-printf                                                                            0x00485     37
-strcpyf                                                                           0x004AA     13
-strlen                                                                            0x004B7     12
-strlenf                                                                           0x004C3     13
-ftrunc                                                                            0x004D0     49
-floor                                                                             0x00501     23
-ftoa                                                                              0x00518    155
+usart_rx_isr                                                                      0x0008C     54
+timer0_ovf_isr                                                                    0x000C2    109
+timer2_ovf_isr                                                                    0x0012F     25
+main                                                                              0x00148    157
+putchar                                                                           0x001E5      9
+put_usart_G100                                                                    0x001EE     10
+_ftoe_G100                                                                        0x001F8    210
+_print_G100                                                                       0x002CA    538
+printf                                                                            0x004E4     37
+spi                                                                               0x00509      9
+strcpyf                                                                           0x00512     13
+strlen                                                                            0x0051F     12
+strlenf                                                                           0x0052B     13
+ftrunc                                                                            0x00538     49
+floor                                                                             0x00569     23
+ftoa                                                                              0x00580    161

@@ -28,7 +28,15 @@ Data Stack size         : 1024
 #include <spi.h>
 unsigned char KOEFF_VEL=255-250;
 
-void read_adc();
+unsigned int data_adc;
+unsigned int DAT_ADC[10];
+float dt=0.00875,timer;
+bit ad_7685;
+bit gotov;
+unsigned int DAT_7685[5];
+
+
+void read_data_adc16();
 
 #ifndef RXB8
 #define RXB8 1
@@ -76,7 +84,6 @@ unsigned int rx_wr_index0,rx_rd_index0,rx_counter0;
 
 // This flag is set on USART Receiver buffer overflow
 bit rx_buffer_overflow0;
-bit gotov;
 
 // USART Receiver interrupt service routine
 interrupt [USART_RXC] void usart_rx_isr(void)
@@ -131,16 +138,25 @@ return data;
 // Timer 0 overflow interrupt service routine
 interrupt [TIM0_OVF] void timer0_ovf_isr(void)
 {
-static int timer_ctr;
-TCCR0B=0x00;
-TCNT0=255-250;
-TCCR0B=0x04;
-if (++timer_ctr >= 100)
-{   
-    gotov = 1; 
-    timer_ctr = 0;
-}
+    static int timer_ctr;
+    TCCR0B=0x00;
+    TCNT0=255-250;
+    TCCR0B=0x04;
+    if (++timer_ctr >= 100)
+    {   
+        gotov = 1; 
+        timer_ctr = 0;
+    }
 
+    PORTC.3=1;delay_us(2);PORTC.3=0;//старт АЦП
+    if(ad_7685) {
+        PORTB.4=1;delay_us(3);PORTB.4=0;delay_us(2);
+        //SPCR=0x55;SPSR=0x00;//0x56 0x5A 5e 51 
+        DAT_7685[0]=(spi(0x00)<<0);DAT_7685[1]=spi(0x00);
+        DAT_7685[0]=DAT_7685[0]*256+DAT_7685[1];
+        gotov=1;  // готовность данных АЦП для передачи        
+        timer=timer+0.001;
+    }
 //gotov=1;
 // putchar(0x55); putchar(0x33);putchar(0x39);
 }
@@ -156,9 +172,22 @@ PORTD.7=1;
 
 }
 
-void read_adc()
+
+
+
+
+
+void read_data_adc16()       // одноканальный АЦП         16 разрядный
 {
+SPCR=0x55;SPSR=0x00;//0x56 0x5A 5e 51
+PORTB.0 = 0;delay_us(1);
+spi(0x12);DAT_ADC[0]=spi(0x00);DAT_ADC[1]=spi(0x00);DAT_ADC[2]=spi(0x00);
+delay_us(1);
+PORTB.0 = 1;
+gotov=1;
 }
+
+
 
 // Declare your global variables here
 
@@ -307,16 +336,18 @@ TWCR=0x00;
 // Global enable interrupts
 #asm("sei")
 PORTD.6=0; 
-PORTD.4=1; PORTD.5=1;
+PORTD.4=0; PORTD.5=0;  // биты для управления двигателем, один направление меняет, а другой разрешает работу контоллера(кит)
 while (1)
       {   
       //putchar(0x55);
       //gotov=1;
-      if(gotov) { read_adc(); PORTD.6=1; delay_us(40);  
+      if(gotov) {  PORTD.6=1; delay_us(40);      //40
       //printf("hello atmega644 vasia\r\n");
      // printf("%9.3f %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f \r\n ", timer,wx,wy,wz,ax,ay,az,DAT_ADC[3]*1.0); 
-       printf("%6.0f \r\n",KOEFF_VEL*1.0);
-      delay_us(150);  
+      // printf("%6.0f \r\n",KOEFF_VEL*1.0); 
+      
+      printf("%9.3f %9.5f   \r\n ", timer,DAT_7685[0]*2.5/65536); 
+      delay_us(160);//  
       PORTD.6=0;  gotov=0;
        }
       }
