@@ -1,0 +1,6 @@
+VERSION:3 SOURCE_TIMESTAMP:507C0473
+NODE:I LEVEL:0 LINE:1 "C:\cvavr\inc\mega644p.h"
+NODE:I LEVEL:0 LINE:2 "C:\cvavr\inc\delay.h"
+NODE:I LEVEL:0 LINE:3 "C:\cvavr\inc\spi.h"
+NODE:I LEVEL:0 LINE:4 "C:\cvavr312\ADS1259\func.h"
+NODE:F LEVEL:0 LINE:8 "spi_rw(unsigned char address,unsigned char value,unsigned char cs_pin)"

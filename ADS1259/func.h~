@@ -1,0 +1,6 @@
+#ifndef FUNC_H
+#define FUNC_H
+
+char spi_rw(char address, char value, char cs_pin);
+
+#endif

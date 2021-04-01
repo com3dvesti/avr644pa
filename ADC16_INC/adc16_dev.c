@@ -26,16 +26,17 @@ Data Stack size         : 1024
 //#include <stlib.h>
 #include <delay.h>
 #include <spi.h>
+#include <math.h>
 unsigned char KOEFF_VEL=255-250;
 
 unsigned int data_adc;
 unsigned int DAT_ADC[10];
 float dt=0.00875,timer;
 bit ad_7685;
-bit gotov;
+bit gotov,adc_en;
 unsigned int DAT_7685[5];
-
-
+unsigned int DATA[500],nk=0;       // счетчик сэмплов измерений
+unsigned int nk0=0;    //счетчик передаваем. данных
 void read_data_adc16();
 
 #ifndef RXB8
@@ -140,23 +141,27 @@ interrupt [TIM0_OVF] void timer0_ovf_isr(void)
 {
     static int timer_ctr;
     TCCR0B=0x00;
-    TCNT0=255-250;
-    TCCR0B=0x04;
-    if (++timer_ctr >= 100)
-    {   
-        gotov = 1; 
-        timer_ctr = 0;
-    }
-
-    PORTC.3=1;delay_us(2);PORTC.3=0;//старт АЦП
-    if(ad_7685) {
-        PORTB.4=1;delay_us(3);PORTB.4=0;delay_us(2);
+    TCNT0=255-40;   //1000 250
+    TCCR0B=0x03;
+    //if (++timer_ctr >= 100)
+   // {   
+  //      gotov = 1; 
+  //      timer_ctr = 0;
+  //  }
+    if(adc_en)  {
+    PORTB.4=1;delay_us(4);PORTB.4=0;//старт АЦП
+   // if(ad_7685) {
+       // PORTB.4=1;delay_us(3);PORTB.4=0;delay_us(2);
         //SPCR=0x55;SPSR=0x00;//0x56 0x5A 5e 51 
         DAT_7685[0]=(spi(0x00)<<0);DAT_7685[1]=spi(0x00);
         DAT_7685[0]=DAT_7685[0]*256+DAT_7685[1];
-        gotov=1;  // готовность данных АЦП для передачи        
+        DATA[nk]=DAT_7685[0];
+        nk=nk+1;
+        if(nk>500){adc_en=0;gotov=1;nk=0;} 
+        }
+        //gotov=1;  // готовность данных АЦП для передачи        
         timer=timer+0.001;
-    }
+   // }
 //gotov=1;
 // putchar(0x55); putchar(0x33);putchar(0x39);
 }
@@ -214,7 +219,7 @@ DDRA=0x00;
 // Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
 // State7=T State6=T State5=T State4=T State3=T State2=T State1=T State0=T 
 PORTB=0x00;
-DDRB=0xB0;
+DDRB=0xBF;
 
 // Port C initialization
 // Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
@@ -236,7 +241,7 @@ DDRD=0xff;
 // OC0B output: Disconnected
 TCCR0A=0x00;
 TCCR0B=0x03;
-TCNT0=0x00;
+TCNT0=0x05;
 OCR0A=0x00;
 OCR0B=0x00;
 
@@ -290,7 +295,8 @@ PCICR=0x00;
 
 // Timer/Counter 0 Interrupt(s) initialization
 TIMSK0=0x01;
-
+// Timer/Counter 0 Interrupt(s) initialization
+TIMSK0=(0<<OCIE0B) | (0<<OCIE0A) | (1<<TOIE0);
 // Timer/Counter 1 Interrupt(s) initialization
 TIMSK1=0x00;
 
@@ -306,8 +312,12 @@ TIMSK2=0x01;
 UCSR0A=0x02;
 UCSR0B=0x98;
 UCSR0C=0x06;
+//UBRR0H=0x00;
+//UBRR0L=0x10;
 UBRR0H=0x00;
-UBRR0L=0x10;
+UBRR0L=0x03;    //500k
+UBRR0H=0x00;
+UBRR0L=0x01;      //1MEG
 
 // Analog Comparator initialization
 // Analog Comparator: Off
@@ -337,18 +347,25 @@ TWCR=0x00;
 #asm("sei")
 PORTD.6=0; 
 PORTD.4=0; PORTD.5=0;  // биты для управления двигателем, один направление меняет, а другой разрешает работу контоллера(кит)
+adc_en=1;gotov=1; nk0=0;
 while (1)
-      {   
-      //putchar(0x55);
-      //gotov=1;
-      if(gotov) {  PORTD.6=1; delay_us(40);      //40
-      //printf("hello atmega644 vasia\r\n");
-     // printf("%9.3f %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f \r\n ", timer,wx,wy,wz,ax,ay,az,DAT_ADC[3]*1.0); 
-      // printf("%6.0f \r\n",KOEFF_VEL*1.0); 
-      
-      printf("%9.3f %9.5f   \r\n ", timer,DAT_7685[0]*2.5/65536); 
-      delay_us(160);//  
-      PORTD.6=0;  gotov=0;
+{   
+          //putchar(0x55);
+          //gotov=1;  
+        if(!adc_en) { 
+              if(gotov) {  PORTD.6=1; delay_us(5);      //40
+                  //printf("hello atmega644 vasia\r\n");
+                 // printf("%9.3f %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f \r\n ", timer,wx,wy,wz,ax,ay,az,DAT_ADC[3]*1.0); 
+                  // printf("%6.0f \r\n",KOEFF_VEL*1.0); 
+                  
+                  //printf("%9.3f %9.5f   \r\n ", timer,DAT_7685[0]*2.5/65536); 
+                  printf("%6.3f %4.0f  \r\n ", DATA[nk0]*2.5/65536,nk0*1.0); 
+                  //delay_us(10);//  
+                  
+                  PORTD.6=1;  gotov=1; 
+                  if(nk0==500){nk0=0;adc_en=1;}
+                  nk0=nk0+1;
+            } 
        }
-      }
+}
 }

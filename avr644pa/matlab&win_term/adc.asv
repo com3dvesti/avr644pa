@@ -1,0 +1,4 @@
+clear all; close,clc;
+load adc_test1.t;A=adc_test1;A1=A(:,1)
+figure(1)
+plot(A)

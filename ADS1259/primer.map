@@ -1,0 +1,58 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+timer                                                                             0x0500       4
+data_adc                                                                          0x0504       4
+dat_osr                                                                           0x0508      80
+DAT_ADC                                                                           0x0558      40
+DAT_7685                                                                          0x0580      10
+rx_buffer0                                                                        0x058A       8
+rx_wr_index0                                                                      0x0592       1
+rx_rd_index0                                                                      0x0593       1
+rx_counter0                                                                       0x0594       1
+_seed                                                                             0x0595       4
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+gotov                                                                             R5           1
+test                                                                              R4           1
+bit_start                                                                         GPIOR0.0  1bit
+bit_kalib                                                                         GPIOR0.1  1bit
+ads_1259                                                                          GPIOR0.2  1bit
+ad_7685                                                                           GPIOR0.3  1bit
+k_osr                                                                             R6,R7        2
+k_del                                                                             R8,R9        2
+ii                                                                                R11          1
+i1                                                                                R10          1
+j                                                                                 R13          1
+ads1259_CONFIG2                                                                   R12          1
+rx_buffer_overflow0                                                               GPIOR0.4  1bit
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+usart0_rx_isr                                                                     0x000A2    132
+timer0_ovf_isr                                                                    0x00126     53
+timer2_ovf_isr                                                                    0x0015B     83
+pin_change_isr1                                                                   0x001AE     32
+read_data                                                                         0x001CE     52
+init_ads1259                                                                      0x00202     46
+kalib_data                                                                        0x00230    117
+main                                                                              0x002A5    353
+putchar                                                                           0x00406     10
+put_usart_G100                                                                    0x00410     13
+_ftoe_G100                                                                        0x0041D    355
+_print_G100                                                                       0x00580    749
+printf                                                                            0x0086D     37
+ftoa                                                                              0x00892    296
+strcpyf                                                                           0x009BA     13
+strlen                                                                            0x009C7     12
+strlenf                                                                           0x009D3     13
+ftrunc                                                                            0x009E0     49
+floor                                                                             0x00A11     23
+spi                                                                               0x00A28      9
