@@ -290,7 +290,7 @@ while (1)
       {   
       //putchar(0x55);
       //gotov=1;
-      if(gotov) { read_adc(); PORTD.6=1; delay_us(40);  
+      if(gotov) { read_adc(); PORTD.6=1; delay_us(50);  
       //printf("hello atmega644 vasia\r\n");
      // printf("%9.3f %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f  %6.0f \r\n ", timer,wx,wy,wz,ax,ay,az,DAT_ADC[3]*1.0); 
        printf("%6.0f \r\n",KOEFF_VEL*1.0);
